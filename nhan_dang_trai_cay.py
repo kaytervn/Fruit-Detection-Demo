@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-import cv2 as cv
+import cv2
 
 model = "trai_cay.onnx"
 filename_classes = "trai_cay.txt"
@@ -18,7 +18,7 @@ try:
         print("Đã load model rồi")
 except:
     st.session_state["LoadModel"] = True
-    st.session_state["Net"] = cv.dnn.readNet(model)
+    st.session_state["Net"] = cv2.dnn.readNet(model)
     print(st.session_state["LoadModel"])
     print("Load model lần đầu")
 
@@ -33,7 +33,7 @@ def postprocess(frame, outs):
 
     if detections:
         classIds, confidences, boxes = zip(*detections)
-        indices = cv.dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThreshold)
+        indices = cv2.dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThreshold)
 
         for i in indices.flatten():
             box = boxes[i]
@@ -66,18 +66,18 @@ def process_output(out, box_scale):
 
 
 def drawPred(frame, classId, conf, left, top, right, bottom):
-    cv.rectangle(frame, (left, top), (right, bottom), (0, 255, 0))
+    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0))
     label = f"{classes[classId]}: {conf:.2f}"
-    labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
     top = max(top, labelSize[1])
-    cv.rectangle(
+    cv2.rectangle(
         frame,
         (left, top - labelSize[1]),
         (left + labelSize[0], top + baseLine),
         (255, 255, 255),
-        cv.FILLED,
+        cv2.FILLED,
     )
-    cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+    cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
 
 img_file_buffer = st.file_uploader(
@@ -87,18 +87,18 @@ img_file_buffer = st.file_uploader(
 if img_file_buffer is not None:
     image = Image.open(img_file_buffer)
     frame = np.array(image)
-    frame = cv.cvtColor(frame, cv.COLOR_RGB2BGR)
+    frame = cv2.cv2tColor(frame, cv2.COLOR_RGB2BGR)
     st.image(image)
     if st.button("Predict"):
-        blob = cv.dnn.blobFromImage(
-            frame, size=(inpWidth, inpHeight), swapRB=True, ddepth=cv.CV_8U
+        blob = cv2.dnn.blobFromImage(
+            frame, size=(inpWidth, inpHeight), swapRB=True, ddepth=cv2.cv2_8U
         )
         st.session_state["Net"].setInput(blob, scalefactor=0.00392)
         outs = st.session_state["Net"].forward(
             st.session_state["Net"].getUnconnectedOutLayersNames()
         )
         postprocess(frame, outs)
-        frame = cv.resize(frame, (inpWidth, inpHeight))
-        color_coverted = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+        frame = cv2.resize(frame, (inpWidth, inpHeight))
+        color_coverted = cv2.cv2tColor(frame, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(color_coverted)
         st.image(pil_image)
