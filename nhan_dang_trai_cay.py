@@ -87,11 +87,11 @@ img_file_buffer = st.file_uploader(
 if img_file_buffer is not None:
     image = Image.open(img_file_buffer)
     frame = np.array(image)
-    frame = cv2.cv2tColor(frame, cv2.COLOR_RGB2BGR)
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     st.image(image)
     if st.button("Predict"):
         blob = cv2.dnn.blobFromImage(
-            frame, size=(inpWidth, inpHeight), swapRB=True, ddepth=cv2.cv2_8U
+            frame, size=(inpWidth, inpHeight), swapRB=True, ddepth=cv2.CV_8U
         )
         st.session_state["Net"].setInput(blob, scalefactor=0.00392)
         outs = st.session_state["Net"].forward(
@@ -99,6 +99,6 @@ if img_file_buffer is not None:
         )
         postprocess(frame, outs)
         frame = cv2.resize(frame, (inpWidth, inpHeight))
-        color_coverted = cv2.cv2tColor(frame, cv2.COLOR_BGR2RGB)
+        color_coverted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(color_coverted)
         st.image(pil_image)
